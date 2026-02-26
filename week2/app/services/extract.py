@@ -66,6 +66,34 @@ def extract_action_items(text: str) -> List[str]:
     return unique
 
 
+def extract_action_items_llm(text: str) -> list[str]:
+    """Extract actionable items from text using an LLM. Returns a list of strings."""
+    prompt = """Extract a list of actionable items from the following text.
+Return ONLY a valid JSON array of strings. No other text, explanation, or markdown.
+Example format: ["item 1", "item 2", "item 3"]
+
+Text:
+"""
+    response = chat(
+        model="llama3.1:8b",
+        messages=[{"role": "user", "content": prompt + text}],
+    )
+    content = response["message"]["content"].strip()
+    # Handle potential markdown code blocks
+    if content.startswith("```"):
+        lines = content.split("\n")
+        content = "\n".join(
+            line for line in lines if not line.startswith("```")
+        )
+    try:
+        parsed = json.loads(content)
+        if isinstance(parsed, list):
+            return [str(item) for item in parsed]
+        return []
+    except json.JSONDecodeError:
+        return []
+
+
 def _looks_imperative(sentence: str) -> bool:
     words = re.findall(r"[A-Za-z']+", sentence)
     if not words:
