@@ -68,9 +68,9 @@ def extract_action_items(text: str) -> List[str]:
 
 def extract_action_items_llm(text: str) -> list[str]:
     """Extract actionable items from text using an LLM. Returns a list of strings."""
-    prompt = """Extract a list of actionable items from the following text.
-Return ONLY a valid JSON array of strings. No other text, explanation, or markdown.
-Example format: ["item 1", "item 2", "item 3"]
+    prompt = """Extract actionable tasks from the following text.
+The text might be in Indonesian. Extract actionable tasks.
+You MUST return ONLY a JSON array of strings. Do not say Here is the JSON or add any formatting.
 
 Text:
 """
@@ -79,12 +79,11 @@ Text:
         messages=[{"role": "user", "content": prompt + text}],
     )
     content = response["message"]["content"].strip()
-    # Handle potential markdown code blocks
-    if content.startswith("```"):
-        lines = content.split("\n")
-        content = "\n".join(
-            line for line in lines if not line.startswith("```")
-        )
+    # Extract JSON array by finding first '[' and last ']' to ignore conversational filler
+    start = content.find("[")
+    end = content.rfind("]")
+    if start != -1 and end != -1 and start <= end:
+        content = content[start : end + 1]
     try:
         parsed = json.loads(content)
         if isinstance(parsed, list):
