@@ -1,5 +1,4 @@
-import pytest
-from unittest.mock import patch, MagicMock
+from unittest.mock import MagicMock, patch
 
 from ..app.services.extract import extract_action_items, extract_action_items_llm
 
@@ -52,11 +51,7 @@ def test_extract_action_items_llm_empty_input(mock_chat: MagicMock):
 @patch("week2.app.services.extract.chat")
 def test_extract_action_items_llm_json_with_markdown(mock_chat: MagicMock):
     """LLM response wrapped in markdown code block is parsed correctly."""
-    mock_chat.return_value = {
-        "message": {
-            "content": '```json\n["Task one", "Task two"]\n```'
-        }
-    }
+    mock_chat.return_value = {"message": {"content": '```json\n["Task one", "Task two"]\n```'}}
     result = extract_action_items_llm("Some text")
     assert result == ["Task one", "Task two"]
 
@@ -64,9 +59,7 @@ def test_extract_action_items_llm_json_with_markdown(mock_chat: MagicMock):
 @patch("week2.app.services.extract.chat")
 def test_extract_action_items_llm_invalid_json_returns_empty(mock_chat: MagicMock):
     """Invalid JSON in LLM response returns empty list."""
-    mock_chat.return_value = {
-        "message": {"content": "Here are the items: 1. Do X 2. Do Y"}
-    }
+    mock_chat.return_value = {"message": {"content": "Here are the items: 1. Do X 2. Do Y"}}
     result = extract_action_items_llm("Some text")
     assert result == []
 

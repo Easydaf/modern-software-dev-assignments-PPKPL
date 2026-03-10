@@ -1,6 +1,6 @@
-import os
 import re
 from collections import Counter
+
 from dotenv import load_dotenv
 from ollama import chat
 
@@ -12,11 +12,19 @@ NUM_RUNS_TIMES = 5
 YOUR_SYSTEM_PROMPT = ""
 
 USER_PROMPT = """
-Solve this problem, then give the final answer on the last line as "Answer: <number>".
+Solve the following math problem step-by-step.
+You must calculate the result for Henry's 60-mile bike trip.
 
-Henry made two stops during his 60-mile bike trip. He first stopped after 20
-miles. His second stop was 15 miles before the end of the trip. How many miles
-did he travel between his first and second stops?
+Required Output Format:
+<thinking>
+[Your step-by-step calculation here]
+</thinking>
+Answer: [only the number]
+
+Logic to follow:
+1. First stop is at 20 miles.
+2. Second stop is 15 miles BEFORE the end (60 - 15).
+3. Calculate the difference between the second stop and the first stop.
 """
 
 EXPECTED_OUTPUT = "Answer: 25"
@@ -82,5 +90,3 @@ def test_your_prompt(system_prompt: str) -> bool:
 
 if __name__ == "__main__":
     test_your_prompt(YOUR_SYSTEM_PROMPT)
-
-

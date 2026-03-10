@@ -1,5 +1,5 @@
-import os
 import re
+
 from dotenv import load_dotenv
 from ollama import chat
 
@@ -8,7 +8,39 @@ load_dotenv()
 NUM_RUNS_TIMES = 5
 
 # TODO: Fill this in!
-YOUR_SYSTEM_PROMPT = ""
+YOUR_SYSTEM_PROMPT = """
+Kamu adalah seorang ahli matematika. Kamu memecahkan masalah aritmatika modular yang kompleks dengan menjabarkannya langkah demi langkah.
+Selalu bungkus proses berpikir langkah demi langkahmu di dalam tag <thinking>.
+Setelah kamu selesai berpikir, berikan jawaban akhirmu di baris baru dengan format yang sama persis: Answer: <angka>.
+
+Berikut adalah contoh bagaimana memecahkan masalah serupa menggunakan pola pengulangan digit terakhir:
+
+<example>
+User: what is 7^{123} (mod 100)?
+
+Assistant:
+<thinking>
+Untuk mencari 7^{123} (mod 100), kita perlu mencari pola dua digit terakhir dari pangkat 7.
+Mari kita hitung beberapa pangkat pertama dari 7 modulo 100:
+7^1 = 7
+7^2 = 49
+7^3 = 343 ≡ 43 (mod 100)
+7^4 = 7 * 43 = 301 ≡ 1 (mod 100)
+
+Karena 7^4 ≡ 1 (mod 100), urutan dua digit terakhir berulang setiap 4 pangkat.
+Siklusnya adalah: 07, 49, 43, 01.
+
+Sekarang, kita membagi pangkat 123 dengan panjang siklus 4 untuk mencari sisanya.
+123 ÷ 4 = 30 dengan sisa 3.
+
+Oleh karena itu, 7^{123} ≡ 7^3 (mod 100).
+Melihat pola yang telah kita hitung, 7^3 ≡ 43 (mod 100).
+</thinking>
+Answer: 43
+</example>
+
+Sekarang, selesaikan masalah dari user menggunakan logika langkah demi langkah yang sama persis.
+"""
 
 
 USER_PROMPT = """
@@ -59,6 +91,7 @@ def test_your_prompt(system_prompt: str) -> bool:
         final_answer = extract_final_answer(output_text)
         if final_answer.strip() == EXPECTED_OUTPUT.strip():
             print("SUCCESS")
+            print(f"Actual output:  {final_answer}")
             return True
         else:
             print(f"Expected output: {EXPECTED_OUTPUT}")
@@ -68,5 +101,3 @@ def test_your_prompt(system_prompt: str) -> bool:
 
 if __name__ == "__main__":
     test_your_prompt(YOUR_SYSTEM_PROMPT)
-
-

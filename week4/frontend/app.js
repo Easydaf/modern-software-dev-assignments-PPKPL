@@ -4,13 +4,59 @@ async function fetchJSON(url, options) {
   return res.json();
 }
 
+function getNotesEndpoint() {
+  const searchInput = document.getElementById('searchQuery');
+  const q = searchInput ? searchInput.value.trim() : '';
+
+  if (q) {
+    return `/notes/search?q=${encodeURIComponent(q)}`;
+  }
+  return '/notes/';
+}
+
 async function loadNotes() {
   const list = document.getElementById('notes');
   list.innerHTML = '';
-  const notes = await fetchJSON('/notes/');
+
+  const notes = await fetchJSON(getNotesEndpoint());
   for (const n of notes) {
     const li = document.createElement('li');
     li.textContent = `${n.title}: ${n.content}`;
+
+    // Membuat tombol Edit
+    const editBtn = document.createElement('button');
+    editBtn.textContent = 'Edit';
+    editBtn.style.marginLeft = '10px';
+    editBtn.onclick = async () => {
+      const newTitle = prompt('Edit Title:', n.title);
+      const newContent = prompt('Edit Content:', n.content);
+
+      if (newTitle !== null && newContent !== null) {
+        await fetchJSON(`/notes/${n.id}`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ title: newTitle, content: newContent })
+        });
+        loadNotes();
+      }
+    };
+
+    // Membuat tombol Delete
+    const deleteBtn = document.createElement('button');
+    deleteBtn.textContent = 'Delete';
+    deleteBtn.style.marginLeft = '5px';
+    deleteBtn.onclick = async () => {
+      const confirmDelete = confirm('Yakin ingin menghapus catatan ini?');
+      if (confirmDelete) {
+        await fetchJSON(`/notes/${n.id}`, {
+          method: 'DELETE'
+        });
+        loadNotes();
+      }
+    };
+
+    li.appendChild(editBtn);
+    li.appendChild(deleteBtn);
     list.appendChild(li);
   }
 }
@@ -60,6 +106,13 @@ window.addEventListener('DOMContentLoaded', () => {
     e.target.reset();
     loadActions();
   });
+
+  const searchInput = document.getElementById('searchQuery');
+  if (searchInput) {
+    searchInput.addEventListener('input', () => {
+      loadNotes();
+    });
+  }
 
   loadNotes();
   loadActions();

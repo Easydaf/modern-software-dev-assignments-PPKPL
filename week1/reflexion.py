@@ -1,6 +1,6 @@
-import os
 import re
 from typing import Callable, List, Tuple
+
 from dotenv import load_dotenv
 from ollama import chat
 
@@ -15,16 +15,20 @@ Keep the implementation minimal.
 """
 
 # TODO: Fill this in!
-YOUR_REFLEXION_PROMPT = ""
+YOUR_REFLEXION_PROMPT = """
+You are a senior Python developer. You will be provided with a previous implementation of a function and a list of test failures.
+Your goal is to analyze the failures, identify the missing requirements, and provide a corrected, minimal Python code block.
+Output ONLY the corrected Python code block. No explanations.
+"""
 
 
 # Ground-truth test suite used to evaluate generated code
 SPECIALS = set("!@#$%^&*()-_")
 TEST_CASES: List[Tuple[str, bool]] = [
-    ("Password1!", True),       # valid
-    ("password1!", False),      # missing uppercase
-    ("Password!", False),       # missing digit
-    ("Password1", False),       # missing special
+    ("Password1!", True),  # valid
+    ("password1!", False),  # missing uppercase
+    ("Password!", False),  # missing digit
+    ("Password1", False),  # missing special
 ]
 
 
@@ -92,11 +96,11 @@ def generate_initial_function(system_prompt: str) -> str:
 
 
 def your_build_reflexion_context(prev_code: str, failures: List[str]) -> str:
-    """TODO: Build the user message for the reflexion step using prev_code and failures.
+    """Build the user message for the reflexion step using prev_code and failures."""
+    errors_str = "\n".join(failures)
 
-    Return a string that will be sent as the user content alongside the reflexion system prompt.
-    """
-    return ""
+    # Pesan yang akan dikirim kembali ke AI agar dia tahu kesalahannya
+    return f"Previous Code:\n```python\n{prev_code}\n```\n\nFailed Tests:\n{errors_str}\n\nPlease fix the code."
 
 
 def apply_reflexion(

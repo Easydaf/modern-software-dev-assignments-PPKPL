@@ -1,6 +1,7 @@
 import os
 import re
-from typing import List, Callable
+from typing import Callable, List
+
 from dotenv import load_dotenv
 from ollama import chat
 
@@ -18,7 +19,7 @@ def load_corpus_from_files(paths: List[str]) -> List[str]:
     for p in paths:
         if os.path.exists(p):
             try:
-                with open(p, "r", encoding="utf-8") as f:
+                with open(p, encoding="utf-8") as f:
                     corpus.append(f.read())
             except Exception as exc:
                 corpus.append(f"[load_error] {p}: {exc}")
@@ -37,7 +38,14 @@ QUESTION = (
 
 
 # TODO: Fill this in!
-YOUR_SYSTEM_PROMPT = ""
+YOUR_SYSTEM_PROMPT = """
+You are a precise Python Engineering Assistant.
+Your task is to write Python code based EXACTLY and ONLY on the provided Context documentation.
+
+CRITICAL RULES:
+1. Do not hallucinate. Use the specific Base URL, Endpoints, and Headers found in the Context.
+2. If the Context is missing or empty, state that you cannot solve it.
+3. Output ONLY a single fenced Python code block. No explanations."""
 
 
 # For this simple example
@@ -52,11 +60,8 @@ REQUIRED_SNIPPETS = [
 
 
 def YOUR_CONTEXT_PROVIDER(corpus: List[str]) -> List[str]:
-    """TODO: Select and return the relevant subset of documents from CORPUS for this task.
-
-    For example, return [] to simulate missing context, or [corpus[0]] to include the API docs.
-    """
-    return []
+    """Select and return the relevant subset of documents from CORPUS for this task."""
+    return corpus  # Return all documents for this example
 
 
 def make_user_prompt(question: str, context_docs: List[str]) -> str:
@@ -89,7 +94,9 @@ def extract_code_block(text: str) -> str:
     return text.strip()
 
 
-def test_your_prompt(system_prompt: str, context_provider: Callable[[List[str]], List[str]]) -> bool:
+def test_your_prompt(
+    system_prompt: str, context_provider: Callable[[List[str]], List[str]]
+) -> bool:
     """Run up to NUM_RUNS_TIMES and return True if any output matches EXPECTED_OUTPUT."""
     context_docs = context_provider(CORPUS)
     user_prompt = make_user_prompt(QUESTION, context_docs)
