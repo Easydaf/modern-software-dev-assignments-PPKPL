@@ -20,12 +20,30 @@ class NoteCreate(BaseModel):
         return value.strip()
 
 
+class TagCreate(BaseModel):
+    name: Annotated[str, Field(min_length=1, max_length=100, pattern=r".*\S.*")]
+
+    @field_validator("name")
+    @classmethod
+    def strip_name(cls, value: str) -> str:
+        return value.strip()
+
+
+class TagRead(BaseModel):
+    id: int
+    name: str
+
+    class Config:
+        from_attributes = True
+
+
 class NoteRead(BaseModel):
     id: int
     title: str
     content: str
     created_at: datetime
     updated_at: datetime
+    tags: list[TagRead] = []
 
     class Config:
         from_attributes = True
