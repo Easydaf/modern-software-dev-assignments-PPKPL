@@ -1,11 +1,23 @@
 from datetime import datetime
+from typing import Annotated
 
-from pydantic import BaseModel
+from pydantic import BaseModel, Field, field_validator
+
+NonEmptyText = Annotated[str, Field(min_length=1, pattern=r".*\S.*")]
+TitleText = Annotated[
+    str,
+    Field(min_length=1, max_length=200, pattern=r".*\S.*"),
+]
 
 
 class NoteCreate(BaseModel):
-    title: str
-    content: str
+    title: TitleText
+    content: NonEmptyText
+
+    @field_validator("title", "content")
+    @classmethod
+    def strip_text_fields(cls, value: str) -> str:
+        return value.strip()
 
 
 class NoteRead(BaseModel):
@@ -20,12 +32,24 @@ class NoteRead(BaseModel):
 
 
 class NotePatch(BaseModel):
-    title: str | None = None
-    content: str | None = None
+    title: TitleText | None = None
+    content: NonEmptyText | None = None
+
+    @field_validator("title", "content")
+    @classmethod
+    def strip_text_fields(cls, value: str | None) -> str | None:
+        if value is None:
+            return None
+        return value.strip()
 
 
 class ActionItemCreate(BaseModel):
-    description: str
+    description: NonEmptyText
+
+    @field_validator("description")
+    @classmethod
+    def strip_description(cls, value: str) -> str:
+        return value.strip()
 
 
 class ActionItemRead(BaseModel):
@@ -40,5 +64,12 @@ class ActionItemRead(BaseModel):
 
 
 class ActionItemPatch(BaseModel):
-    description: str | None = None
+    description: NonEmptyText | None = None
     completed: bool | None = None
+
+    @field_validator("description")
+    @classmethod
+    def strip_description(cls, value: str | None) -> str | None:
+        if value is None:
+            return None
+        return value.strip()

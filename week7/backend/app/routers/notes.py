@@ -43,6 +43,16 @@ def create_note(payload: NoteCreate, db: Session = Depends(get_db)) -> NoteRead:
     return NoteRead.model_validate(note)
 
 
+@router.get("/search/", response_model=list[NoteRead])
+def search_notes(q: str = Query(..., min_length=1), db: Session = Depends(get_db)) -> list[NoteRead]:
+    keyword = q.strip()
+    stmt = select(Note).where((Note.title.contains(keyword)) | (Note.content.contains(keyword)))
+    rows = db.execute(stmt).scalars().all()
+    if not rows:
+        raise HTTPException(status_code=404, detail="No matching notes found")
+    return [NoteRead.model_validate(row) for row in rows]
+
+
 @router.patch("/{note_id}", response_model=NoteRead)
 def patch_note(note_id: int, payload: NotePatch, db: Session = Depends(get_db)) -> NoteRead:
     note = db.get(Note, note_id)
