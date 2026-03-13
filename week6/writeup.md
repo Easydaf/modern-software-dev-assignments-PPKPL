@@ -9,7 +9,7 @@ Fill out all of the `TODO`s in this file.
 
 ## Submission Details
 
-Name: **TODO** \
+Name: **Muhammad Daffa Musyafa** \
 SUNet ID: **TODO** \
 Citations: **TODO**
 
